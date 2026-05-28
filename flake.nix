@@ -1,16 +1,37 @@
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  outputs = { nixpkgs, ... }:
+  inputs.nixpkgs.url = "git+ssh://git@github.com/NixOS/nixpkgs.git?ref=nixos-unstable";
+  outputs =
+    { nixpkgs, ... }:
     let
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-    in {
-      devShells.x86_64-linux.default = pkgs.mkShellNoCC {
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+    in
+    {
+      formatter.${system} = pkgs.treefmt.withConfig {
+        settings.formatter.air = {
+          command = "${pkgs.air-formatter}/bin/air";
+          options = [ "format" ];
+          includes = [
+            "*.R"
+            "*.r"
+          ];
+        };
+        settings.formatter.nixfmt = {
+          command = "${pkgs.nixfmt}/bin/nixfmt";
+          includes = [ "*.nix" ];
+        };
+      };
+
+      devShells.${system}.default = pkgs.mkShellNoCC {
         shellHook = ''
           fish
         '';
         packages = [
           (pkgs.rWrapper.override {
-            packages = [ pkgs.rPackages.ggplot2  pkgs.rPackages.svglite ];
+            packages = [
+              pkgs.rPackages.ggplot2
+              pkgs.rPackages.svglite
+            ];
           })
         ];
       };
