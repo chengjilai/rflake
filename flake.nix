@@ -23,9 +23,6 @@
       };
 
       devShells.${system}.default = pkgs.mkShellNoCC {
-        shellHook = ''
-          fish
-        '';
         packages = [
           (pkgs.rWrapper.override {
             packages = [
